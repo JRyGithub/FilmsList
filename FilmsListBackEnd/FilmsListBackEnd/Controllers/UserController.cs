@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FilmsListBackEnd.Entities;
+using FilmsListBackEnd.Services;
 
 namespace FilmsListBackEnd.Controllers
 {
@@ -27,11 +28,11 @@ namespace FilmsListBackEnd.Controllers
             return await _context.Users.ToListAsync();
         }
 
-        // GET: api/User/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(string id)
+        // GET: api/User/{User Email}
+        [HttpGet("{userEmail}")]
+        public async Task<ActionResult<User>> GetUser(string userEmail)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(userEmail);
 
             if (user == null)
             {
@@ -41,12 +42,33 @@ namespace FilmsListBackEnd.Controllers
             return user;
         }
 
+        // GET: api/User/{UserEmail}/{password} //LOGIN
+        [HttpPost]
+        public async Task<ActionResult<User>> GetUser(User user)
+        { 
+            var userAttempt = await _context.Users.FindAsync(user.UserEmail);
+            var attemptedPassword = Utilities.ComputeSha256Hash(user.Password);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+            else if (userAttempt.Password == attemptedPassword)
+            {
+                return user;
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
         // PUT: api/User/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(string id, User user)
+        [HttpPut("{userEmail}")]
+        public async Task<IActionResult> PutUser(string userEmail, User user)
         {
-            if (id != user.UserEmail)
+            if (userEmail != user.UserEmail)
             {
                 return BadRequest();
             }
@@ -59,7 +81,7 @@ namespace FilmsListBackEnd.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(id))
+                if (!UserExists(userEmail))
                 {
                     return NotFound();
                 }
@@ -77,6 +99,10 @@ namespace FilmsListBackEnd.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
+
+            user.Password = Utilities.ComputeSha256Hash(user.Password);
+
+
             _context.Users.Add(user);
             try
             {
@@ -94,14 +120,14 @@ namespace FilmsListBackEnd.Controllers
                 }
             }
 
-            return CreatedAtAction("GetUser", new { id = user.UserEmail }, user);
+            return CreatedAtAction("GetUser", new { userEmail = user.UserEmail }, user);
         }
 
         // DELETE: api/User/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(string id)
+        [HttpDelete("{userEmail}")]
+        public async Task<IActionResult> DeleteUser(string userEmail)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(userEmail);
             if (user == null)
             {
                 return NotFound();
@@ -113,9 +139,9 @@ namespace FilmsListBackEnd.Controllers
             return NoContent();
         }
 
-        private bool UserExists(string id)
+        private bool UserExists(string userEmail)
         {
-            return _context.Users.Any(e => e.UserEmail == id);
+            return _context.Users.Any(e => e.UserEmail == userEmail);
         }
     }
 }
