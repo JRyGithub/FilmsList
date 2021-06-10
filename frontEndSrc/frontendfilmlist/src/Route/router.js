@@ -9,7 +9,7 @@ export const MyRouter = () => {
             <Route path='/signIn'>
                 <SignIn/>
             </Route>
-            <Route path='/filmList'>
+            <Route path='/filmList/:userEmail/:token'>
                 <FilmList/>
             </Route> 
             <Route path='/'>

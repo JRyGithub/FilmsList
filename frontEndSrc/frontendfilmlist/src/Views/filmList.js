@@ -1,16 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import NavBar from "../Components/navBar";
-import {Link} from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
-export const FilmList = () => {
+export const FilmList = (props) => {
   const [filmName, setFilmName] = useState("");
   const [directorName, setDirectorName] = useState("");
   const [genre, setGenre] = useState("");
+  const [filmList, setFilmList] = useState([]);
+  let { userEmail, token } = useParams();
+
+  useEffect(() => {
+    var config = {
+      method: "post",
+      url: `https://localhost:5001/api/UsersFilms?userEmail=${userEmail}`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    axios(config)
+      .then(function (response) {
+        console.log("Axios");
+        console.log(response.data);
+        console.log(typeof response.data)
+        const arrayOfFilms = Object.keys(response.data)
+        console.log(typeof arrayOfFilms);
+
+        response.data.forEach(film => {
+          setFilmList(prevItems => [...prevItems, film]);
+        });        
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, [userEmail, token]);
 
   return (
     <>
-      <Link path='/'><NavBar /></Link>
+      <Link path="/">
+        <NavBar />
+      </Link>
       <Container>
         <Table>
           <Tr>
@@ -18,16 +51,13 @@ export const FilmList = () => {
             <Th>Director</Th>
             <Th>Genre</Th>
           </Tr>
-          <Tr>
-            <Td>Star Wars</Td>
-            <Td>George Lucas</Td>
-            <Td>Sci Fi</Td>
+          {filmList.map(film => (
+            <Tr>
+            <Td>{film.filmName}</Td>
+            <Td>{film.directorName}</Td>
+            <Td>{film.genre}</Td>
           </Tr>
-          <Tr>
-            <Td>Lord of the Rings</Td>
-            <Td>J.R.R Tolkien</Td>
-            <Td>Fantasy</Td>
-          </Tr>
+          ))}
           <Tr>
             <Td>
               <Input

@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FilmsListBackEnd.Entities;
 using FilmsListBackEnd.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FilmsListBackEnd.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase

@@ -13,7 +13,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onUserLogin: (userEmail) => dispatch(setUser(userEmail)),
+    onUserLogin: (user, token) => dispatch(setUser(user, token)),
   };
 };
 
@@ -39,15 +39,16 @@ export const SignIn = (props) => {
     
     axios(config)
     .then(function (response) {
-        console.log(response.status);
+        console.log(response.data.token);
         if(response.status === 200){
-          onUserLogin(email);
-          history.push('/filmList');
+          onUserLogin(email, response.data.token);
+          history.push(`/filmList/${email}/${response.data.token}`);
         }
     })
     .catch(function (error) {
       setSignInSuccess(false);
       console.log("Sign in failed.");
+      console.log(error);
     });
     
   };

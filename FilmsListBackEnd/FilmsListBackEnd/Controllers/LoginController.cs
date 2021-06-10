@@ -53,7 +53,7 @@ namespace FilmsListBackEnd.Controllers
                 JwtGenerator token = _jwtGenerator
                     .AddClaim(new Claim(ClaimTypes.Email, user.UserEmail));
 
-                return Ok(new { Token = token.GetToken(), Messaage = "Success", ExpirationInUnixTime = token.GetTokenExpirationInUnixTime });
+                return Ok(new { Token = token.GetToken(), Message = "Success", ExpirationInUnixTime = token.GetTokenExpirationInUnixTime });
             }
             else
             {
