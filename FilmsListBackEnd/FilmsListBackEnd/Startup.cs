@@ -24,10 +24,11 @@ namespace FilmsListBackEnd
         }
 
         public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+
             services.AddDbContext<FilmListContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -47,6 +48,8 @@ namespace FilmsListBackEnd
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "FilmsListBackEnd v1"));
             }
+
+            app.UseCors(c => c.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
             app.UseHttpsRedirection();
 

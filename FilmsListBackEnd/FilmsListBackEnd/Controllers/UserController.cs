@@ -6,28 +6,29 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FilmsListBackEnd.Entities;
+using FilmsListBackEnd.Services;
 
 namespace FilmsListBackEnd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class User2Controller : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly FilmListContext _context;
 
-        public User2Controller(FilmListContext context)
+        public UserController(FilmListContext context)
         {
             _context = context;
         }
 
-        // GET: api/User2
+        // GET: api/User
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             return await _context.Users.ToListAsync();
         }
 
-        // GET: api/User2/5
+        // GET: api/User/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(string id)
         {
@@ -41,7 +42,7 @@ namespace FilmsListBackEnd.Controllers
             return user;
         }
 
-        // PUT: api/User2/5
+        // PUT: api/User/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(string id, User user)
@@ -72,11 +73,13 @@ namespace FilmsListBackEnd.Controllers
             return NoContent();
         }
 
-        // POST: api/User2
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // POST: api/User
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754 //CreatesUser
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
+            user.Password = Utilities.ComputeSha256Hash(user.Password);
+
             _context.Users.Add(user);
             try
             {
@@ -97,7 +100,7 @@ namespace FilmsListBackEnd.Controllers
             return CreatedAtAction("GetUser", new { id = user.UserEmail }, user);
         }
 
-        // DELETE: api/User2/5
+        // DELETE: api/User/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {

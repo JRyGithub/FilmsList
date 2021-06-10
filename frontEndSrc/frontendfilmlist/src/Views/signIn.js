@@ -1,0 +1,86 @@
+import React, { useState } from "react";
+import styled from "styled-components";
+import { Link, useHistory } from "react-router-dom";
+import axios from "axios";
+
+export const SignIn = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signInSuccess, setSignInSuccess] = useState(true);
+
+  const history = useHistory();
+
+  const login = () => {
+    var data = JSON.stringify({"userEmail": email,"password": password});
+    
+    var config = {
+      method: 'post',
+      url: 'https://localhost:5001/api/Login',
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      data : data
+    };
+    
+    axios(config)
+    .then(function (response) {
+        console.log(response.status);
+        if(response.status === 200){
+          history.push('/filmList');
+        }
+    })
+    .catch(function (error) {
+      setSignInSuccess(false);
+      console.log("Sign in failed.");
+    });
+    
+  };
+  const createAccount = () => {
+  };
+  return (
+    <Container>
+      <h1>Log In</h1>
+      <Input
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+      <Input
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+      />
+      <Button type="submit" onClick={login}>
+        Submit
+      </Button>
+      <StyledLink to="/resetPassword">
+        <Button>Reset Password</Button>
+      </StyledLink>
+      <StyledLink to="/createAccount">
+        <Button>Create Account</Button>
+      </StyledLink>
+    </Container>
+  );
+};
+
+export default SignIn;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 100vh;
+  align-items: center;
+  text-align: center;
+`;
+const StyledLink = styled(Link)`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+const Input = styled.input``;
+const Button = styled.button`
+  font-size: 12px;
+`;
