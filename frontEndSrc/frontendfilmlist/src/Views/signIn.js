@@ -2,14 +2,29 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
+import { setUser } from "../Reducers/actions";
+import { connect } from "react-redux";
 
-export const SignIn = () => {
+const mapStateToProps = (state) => {
+  return {
+    userEmail: state.setUser.userEmail,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onUserLogin: (userEmail) => dispatch(setUser(userEmail)),
+  };
+};
+
+export const SignIn = (props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signInSuccess, setSignInSuccess] = useState(true);
 
-  const history = useHistory();
+  const { onUserLogin } = props;
 
+  const history = useHistory();
   const login = () => {
     var data = JSON.stringify({"userEmail": email,"password": password});
     
@@ -26,6 +41,7 @@ export const SignIn = () => {
     .then(function (response) {
         console.log(response.status);
         if(response.status === 200){
+          onUserLogin(email);
           history.push('/filmList');
         }
     })
@@ -63,7 +79,7 @@ export const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
 
 const Container = styled.div`
   display: flex;
