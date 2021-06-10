@@ -13,6 +13,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using FilmsListBackEnd.Helpers;
 
 namespace FilmsListBackEnd
 {
@@ -33,10 +37,54 @@ namespace FilmsListBackEnd
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddControllers();
-            services.AddSwaggerGen(c =>
+            services.AddMvc();
+            services.AddScoped<IJwtGenerator, JwtGenerator>();
+            services.AddSwaggerGen(swagger =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "FilmsListBackEnd", Version = "v1" });
+                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "FilmsListBackEnd", Version = "v1" });
+                swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+                });
+                swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                          new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                }
+                            },
+                            new string[] {}
+
+                    }
+                });
             });
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
+                authenticationScheme: JwtBearerDefaults.AuthenticationScheme,
+                configureOptions: options =>
+                {
+                    options.IncludeErrorDetails = true;
+                    options.TokenValidationParameters =
+                        new TokenValidationParameters()
+                        {
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
+                            ValidAudience = "identityapp",
+                            ValidIssuer = "identityapp",
+                            RequireExpirationTime = true,
+                            RequireAudience = true,
+                            ValidateAudience = true,
+                            ValidateIssuer = true,
+                            ValidateLifetime = true,
+                        };
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,12 +103,21 @@ namespace FilmsListBackEnd
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+           
+            /*app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+
+            });*/
         }
     }
 }

@@ -19,7 +19,7 @@ namespace FilmsListBackEnd.Entities
         protected override void OnModelCreating(ModelBuilder modelBuilder){
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Film>().ToTable("Film");
-            modelBuilder.Entity<UserFilmList>().ToTable("UserFilmList");
+            modelBuilder.Entity<UserFilmList>().ToTable("UserFilmList");            
         }
     }
 }

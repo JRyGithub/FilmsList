@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FilmsListBackEnd.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FilmsListBackEnd.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FilmController : ControllerBase
     {
         private readonly FilmListContext _context;
