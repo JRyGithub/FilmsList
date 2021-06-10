@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 import NavBar from "../Components/navBar";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 export const FilmList = (props) => {
   const [filmName, setFilmName] = useState("");
   const [directorName, setDirectorName] = useState("");
   const [genre, setGenre] = useState("");
   const [filmList, setFilmList] = useState([]);
+  const [refresh, setRefresh] = useState(0);
+
   let { userEmail, token } = useParams();
 
   useEffect(() => {
@@ -26,19 +29,84 @@ export const FilmList = (props) => {
       .then(function (response) {
         console.log("Axios");
         console.log(response.data);
-        console.log(typeof response.data)
-        const arrayOfFilms = Object.keys(response.data)
+        console.log(typeof response.data);
+        const arrayOfFilms = Object.keys(response.data);
         console.log(typeof arrayOfFilms);
 
-        response.data.forEach(film => {
-          setFilmList(prevItems => [...prevItems, film]);
-        });        
+        response.data.forEach((film) => {
+          setFilmList((prevItems) => [...prevItems, film]);
+        });
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, [userEmail, token]);
+  }, [userEmail, token, refresh]);
 
+  const addfilm = () => {
+    if ((filmName || directorName || genre) === "") {
+      console.log("Blank filmname and directorName");
+      return;
+    }
+    let guid = uuidv4();
+
+    var data = JSON.stringify({
+      filmId: guid,
+      filmName: filmName,
+      directorName: directorName,
+      genre: genre,
+    });
+    var config = {
+      method: "post",
+      url: `https://localhost:5001/api/Film`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      data: data
+    };
+
+    axios(config)
+      .then(function (response) {
+        if(response.status === 201){
+          addToFilmUserTable(guid);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const addToFilmUserTable = (filmId) => {
+    let guid = uuidv4();
+
+    var data = JSON.stringify({
+      filmId: filmId,
+      userEmail: userEmail,
+      id: guid,
+    });
+    var config = {
+      method: "post",
+      url: `https://localhost:5001/api/UserFilmList`,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      data: data
+    };
+
+    axios(config)
+      .then(function (response) {
+        console.log(response);
+        setFilmName("");
+        setDirectorName("");
+        setGenre("");
+        setFilmList([]);
+        setRefresh(refresh +1);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
   return (
     <>
       <Link path="/">
@@ -51,12 +119,12 @@ export const FilmList = (props) => {
             <Th>Director</Th>
             <Th>Genre</Th>
           </Tr>
-          {filmList.map(film => (
+          {filmList.map((film) => (
             <Tr>
-            <Td>{film.filmName}</Td>
-            <Td>{film.directorName}</Td>
-            <Td>{film.genre}</Td>
-          </Tr>
+              <Td>{film.filmName}</Td>
+              <Td>{film.directorName}</Td>
+              <Td>{film.genre}</Td>
+            </Tr>
           ))}
           <Tr>
             <Td>
@@ -79,7 +147,7 @@ export const FilmList = (props) => {
                 value={genre}
                 onChange={(event) => setGenre(event.target.value)}
               ></Input>
-              <Button>Add</Button>
+              <Button onClick={addfilm}>Add</Button>
             </Td>
           </Tr>
         </Table>
